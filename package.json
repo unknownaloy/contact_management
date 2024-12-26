@@ -1,0 +1,17 @@
+{
+  "name": "contact_api",
+  "version": "1.0.0",
+  "description": "This is express project for my backend api",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon server.js"
+  },
+  "author": "Ellis Ifoegbu",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}
