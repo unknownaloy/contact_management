@@ -63,9 +63,13 @@ export const updateContact = async (req, res, next) => {
       throw new Error("Contact not found");
     }
 
-    const updatedContact = await Contact.findByIdAndUpdate(req.params.id, req.body, {
-      new: true,
-    });
+    const updatedContact = await Contact.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+      }
+    );
 
     await res.status(200).json(updatedContact);
   } catch (err) {
@@ -77,6 +81,26 @@ export const updateContact = async (req, res, next) => {
 //@desc Delete contact
 //@route DELETE /api/contacts/:id
 //@access public
-export const deleteContact = (req, res) => {
-  res.status(200).json({ message: `Delete contact for ${req.params.id}` });
+export const deleteContact = async (req, res, next) => {
+  try {
+    console.log(
+      "contactController - deleteContact -- req.params.id1 ->",
+      req.params.id
+    );
+    const contact = await Contact.findById(req.params.id);
+
+    if (!contact) {
+      res.status(404);
+      throw new Error("Contact not found");
+    }
+    console.log(
+      "contactController - deleteContact -- req.params.id2 ->",
+      req.params.id
+    );
+    await Contact.deleteOne({ _id: req.params.id });
+    res.status(200).json(contact);
+  } catch (err) {
+    res.status(400);
+    next(err);
+  }
 };
