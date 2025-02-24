@@ -1,22 +1,28 @@
 import { Contact } from "../models/contactModel.js";
+import { response } from "../utils/response.js";
 
 //@desc Get all contacts
 //@route GET /api/contacts
-//@access public
+//@access private
 export const getContacts = async (req, res) => {
   try {
-    const contact = await Contact.find();
-    res.status(200).json(contact);
+    const contact = await Contact.find({ user_id: req.user.id });
+    return response(
+      res,
+      { status: true, data: contact, message: "Contacts fetched successfully" },
+      200
+    );
   } catch (err) {
-    res.status(500);
-    next(err);
+    return response(res, { status: false, message: err.message }, 500);
   }
 };
 
 //@desc Create new contact
 //@route POST /api/contacts
-//@access public
+//@access private
 export const createContact = async (req, res) => {
+  console.log("contactController - createContact -- GOT HERE!!!");
+  console.log("contactController - createContact -- req.body ->", req.body);
   try {
     const { name, email, phone } = req.body;
 
@@ -25,35 +31,53 @@ export const createContact = async (req, res) => {
       throw new Error("All fields are mandatory");
     }
 
-    const contact = await Contact.create({ name, email, phone });
-    res.status(200).json(contact);
+    const contact = await Contact.create({
+      name,
+      email,
+      phone,
+      user_id: req.user.id,
+    });
+    return response(
+      res,
+      { status: true, data: contact, message: "Contact created successfully" },
+      201
+    );
   } catch (err) {
-    res.status(500);
-    next(err);
+    return response(res, { status: false, message: err.message }, 500);
   }
 };
 
 //@desc Get contact
 //@route GET /api/contacts/:id
-//@access public
+//@access private
 export const getContact = async (req, res, next) => {
   try {
     const contact = await Contact.findById(req.params.id);
 
     if (!contact) {
-      res.status(404);
-      throw new Error("Contact not found");
+      return response(
+        res,
+        { status: false, message: "Contact not found" },
+        404
+      );
     }
-    await res.status(200).json(contact);
+    // await res.status(200).json(contact);
+    return response(
+      res,
+      { status: true, message: "success", data: contact },
+      200
+    );
   } catch (err) {
-    res.status(404);
-    next(err);
+    // res.status(404);
+    // next(err);
+
+    return response(res, { status: false, message: err.message }, 404);
   }
 };
 
 //@desc Update contact
 //@route PUT /api/contacts/:id
-//@access public
+//@access private
 export const updateContact = async (req, res, next) => {
   try {
     const contact = await Contact.findById(req.params.id);
@@ -80,7 +104,7 @@ export const updateContact = async (req, res, next) => {
 
 //@desc Delete contact
 //@route DELETE /api/contacts/:id
-//@access public
+//@access private
 export const deleteContact = async (req, res, next) => {
   try {
     console.log(

@@ -11,15 +11,27 @@ export const registerUser = async (req, res) => {
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
-    res.status(400);
-    throw new Error("All fields are mandatory");
+    return response(
+      res,
+      {
+        status: false,
+        message: "All fields are mandatory",
+      },
+      400
+    );
   }
 
   const userIsAvailable = await User.findOne({ email });
 
   if (userIsAvailable) {
-    res.status(400);
-    throw new Error("User already exists");
+    return response(
+      res,
+      {
+        status: false,
+        message: "User already exists",
+      },
+      400
+    );
   }
 
   const hashedPassword = await hash(password);
@@ -29,17 +41,14 @@ export const registerUser = async (req, res) => {
   console.log("userController - registerUser -- user ->", user);
 
   if (user) {
-    res.status(201).json({
-      _id: user._id,
-      username: user.username,
-      email: user.email,
+    return response(res, {
+      status: true,
+      message: "User created successfully",
+      data: { id: user.id, username: user.username, email: user.email },
     });
   } else {
-    res.status(400);
-    throw new Error("Invalid user data");
+    return response(res, { status: false, message: "Invalid user data" }, 400);
   }
-
-  // res.json({ message: "Register the user" });
 };
 
 //@desc Login user
@@ -48,8 +57,11 @@ export const registerUser = async (req, res) => {
 export const loginUser = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    res.status(400);
-    throw new Error("All fields are mandatory");
+    return response(
+      res,
+      { status: false, message: "All fields are mandatory" },
+      400
+    );
   }
 
   const user = await User.findOne({ email });
@@ -61,19 +73,21 @@ export const loginUser = async (req, res) => {
       { id: user.id, username: user.username, email: user.email },
       process.env.JWT_SECRET,
       {
-        expiresIn: "30d",
+        expiresIn: "3d",
       }
     );
 
-    res.status(200).json({
-      id: user.id,
-      username: user.username,
-      email: user.email,
-      token,
+    return response(res, {
+      status: true,
+      message: "success",
+      data: { id: user.id, username: user.username, email: user.email, token },
     });
   } else {
-    res.status(401);
-    throw new Error("Email or password is incorrect");
+    return response(
+      res,
+      { status: false, message: "Email or password is incorrect" },
+      401
+    );
   }
 };
 
@@ -81,6 +95,5 @@ export const loginUser = async (req, res) => {
 //@route GET /api/users/current
 //@access private
 export const currentUser = async (req, res) => {
-  // res.json(req.user);
   return response(res, { status: true, message: "success", data: req.user });
 };
