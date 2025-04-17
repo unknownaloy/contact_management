@@ -87,6 +87,16 @@ export const updateContact = async (req, res, next) => {
       throw new Error("Contact not found");
     }
 
+    if (contact.user_id.toString() !== req.user.id) {
+      // A different user is trying to update the contact
+
+      return response(
+        res,
+        { status: false, message: "User don't have permission to update" },
+        403
+      );
+    }
+
     const updatedContact = await Contact.findByIdAndUpdate(
       req.params.id,
       req.body,
@@ -95,7 +105,12 @@ export const updateContact = async (req, res, next) => {
       }
     );
 
-    await res.status(200).json(updatedContact);
+    // await res.status(200).json(updatedContact);
+    return response(res, {
+      status: true,
+      message: "success",
+      data: updatedContact,
+    });
   } catch (err) {
     res.status(404);
     next(err);
@@ -117,12 +132,26 @@ export const deleteContact = async (req, res, next) => {
       res.status(404);
       throw new Error("Contact not found");
     }
+    if (contact.user_id.toString() !== req.user.id) {
+      // A different user is trying to update the contact
+
+      return response(
+        res,
+        { status: false, message: "User don't have permission to update" },
+        403
+      );
+    }
     console.log(
       "contactController - deleteContact -- req.params.id2 ->",
       req.params.id
     );
     await Contact.deleteOne({ _id: req.params.id });
-    res.status(200).json(contact);
+    // res.status(200).json(contact);
+    return response(res, {
+      status: true,
+      message: "success",
+      data: contact,
+    });
   } catch (err) {
     res.status(400);
     next(err);
